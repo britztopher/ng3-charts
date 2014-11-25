@@ -11,21 +11,14 @@ var directive, m, mod, old_m,
       return -1;
     };
 
-old_m = angular.module('n3-charts.linechart', ['n3charts.utils']);
+angular.module('ng3-charts', ['ng3charts.utils'])
 
-m = angular.module('n3-line-chart', ['n3charts.utils']);
-
-directive = function (name, conf) {
-  old_m.directive(name, conf);
-  return m.directive(name, conf);
-};
-
-directive('linechart', [
-  'n3utils', '$window', '$timeout', function (n3utils, $window, $timeout) {
+.directive('linechart', [
+  'ng3utils', '$window', '$timeout', function (ng3utils, $window, $timeout) {
     var link;
     link = function (scope, element, attrs, ctrl) {
       var dim, initialHandlers, isUpdatingOptions, promise, window_resize, _u;
-      _u = n3utils;
+      _u = ng3utils;
       dim = _u.getDefaultMargins();
       element[0].style['font-size'] = 0;
       scope.updateDimensions = function (dimensions) {
@@ -122,9 +115,9 @@ directive('linechart', [
   }
 ]);
 
-mod = angular.module('n3charts.utils', []);
+angular.module('ng3charts.utils', [])
 
-mod.factory('n3utils', [
+.factory('ng3utils', [
   '$window', '$log', '$rootScope', function ($window, $log, $rootScope) {
     return {
       addPatterns: function (svg, series) {
