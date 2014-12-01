@@ -14,7 +14,7 @@ var directive, m, mod, old_m,
 angular.module('ng3-charts', ['ng3charts.utils'])
 
 .directive('linechart', [
-  'ng3utils', '$window', '$timeout', function (ng3utils, $window, $timeout) {
+  'ng3utils', '$log', '$timeout', '$window', function (ng3utils, $log, $timeout, $window) {
     var link;
     link = function (scope, element, attrs, ctrl) {
       var dim, initialHandlers, isUpdatingOptions, promise, window_resize, _u;
@@ -52,7 +52,7 @@ angular.module('ng3-charts', ['ng3charts.utils'])
         handlers = angular.extend(initialHandlers, _u.getTooltipHandlers(options));
 
         dataPerSeries = _u.getDataPerSeries(scope.data, options);
-        console.log('DataPerSeries: \n' , dataPerSeries);
+        $log.debug('DataPerSeries: \n' , dataPerSeries);
 
         rangeData = angular.copy(dataPerSeries);
 
@@ -75,7 +75,7 @@ angular.module('ng3-charts', ['ng3charts.utils'])
           columnWidth = _u.getBestColumnWidth(dimensions, dataPerSeries, options);
          var  newData = _u.getRangeData(svg, rangeData);
 
-          console.log('NewData: \n' , newData);
+          $log.debug('NewData: \n' , newData);
 
           _u.drawRange(svg, axes, newData, options, handlers).drawArea(svg, axes, dataPerSeries, options, handlers).drawColumns(svg, axes, dataPerSeries, columnWidth, options, handlers).drawLines(svg, axes, dataPerSeries, options, handlers);
           if (options.drawDots) {
@@ -149,27 +149,32 @@ angular.module('ng3charts.utils', [])
 
         var rangeAreaSeries, prevArea = 0;
 
-        var data = dataPerRange;
+        var data = dataPerRange
+            , prevRange;
 
+        //filter on rangearea types from series
         rangeAreaSeries = data.filter(function (series) {
           return series.type === 'rangearea';
         });
 
+        //for each range in series
         rangeAreaSeries.forEach(function(range, index){
 
-          console.log('Range: ', range)
+          $log.debug('Range: ', range)
 
+          //for each data value within a range
           range.values.forEach(function(value, index){
-
-            value.y0 = prevArea;
-
+            //if prevRange series exists
+            if(prevRange){
+              value.y0 = prevRange[index].y; //assign the lower limit to use the previous looped ranges vertical value
+            }else{
+              value.y0 = 0; //or if its the first range, just assign 0 for horizontal range
+            }
           });
 
-          prevArea = range.values[index].y;
-
+          //save prevous range values to use in next iteration
+          prevRange = range.values;
         });
-
-        console.log('RangeAreaSeries After Loop: \n', rangeAreaSeries)
 
         return rangeAreaSeries;
       },
@@ -343,7 +348,7 @@ angular.module('ng3charts.utils', [])
           return s.color;
         }).style('fill', function (s) {
           return s.color;
-        }).style('fill-opacity', 0.8).attr('transform', function (s) {
+        }).style('fill-opacity', 1).attr('transform', function (s) {
           return "translate(" + x1(s) + ",0)";
         }).on('mouseover', function (series) {
           var target;
@@ -608,7 +613,6 @@ angular.module('ng3charts.utils', [])
       },
       drawLines: function (svg, scales, data, options, handlers) {
 
-        console.log('Data in Draw Lines: \n')
         var drawers, interpolateData, lineGroup;
         drawers = {
           y: this.createLeftLineDrawer(scales, options.lineMode, options.tension),
@@ -710,9 +714,6 @@ angular.module('ng3charts.utils', [])
         return d3.svg.line().x(function (d) {
           return scales.xScale(d.x);
         }).y(function (d) {
-
-          console.log('DTYPE: ', d.type);
-
           return scales.yScale(d.y + d.y0);
         }).interpolate(mode).tension(tension);
       },
@@ -901,7 +902,7 @@ angular.module('ng3charts.utils', [])
           return layout(layers);
         });
 
-        console.log('Straightened: ', straightened);
+        $log.debug('Straightened: ', straightened);
 
         return straightened;
       },
@@ -1057,6 +1058,7 @@ angular.module('ng3charts.utils', [])
         series.forEach(function (s) {
           return seriesKeys[s.id] = s;
         });
+
         stacks.forEach(function (stack) {
           return stack.series.forEach(function (id) {
             var s;
@@ -1067,9 +1069,10 @@ angular.module('ng3charts.utils', [])
               }
             } else {
               if (!s) {
-                return $log.warn("Unknown series found in stack : " + id);
+                return $log.error("Unknown series found in stack : " + id);
               }
             }
+
           });
         });
         return stacks;
@@ -1307,7 +1310,6 @@ angular.module('ng3charts.utils', [])
           return stack.axis === key;
         }));
 
-        console.log('DomainY: ', domain)
         if (o.type === 'log') {
           domain[0] = domain[0] === 0 ? 0.001 : domain[0];
         }
@@ -1482,8 +1484,6 @@ angular.module('ng3charts.utils', [])
           }
           item.attr('opacity', 1);
           v = that.getClosestPoint(series.values, axes.xScale.invert(x));
-
-          console.log('V: ', v);
 
           text = v.x + ' : ' + v.y;
           if (options.tooltip.formatter) {
