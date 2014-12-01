@@ -149,7 +149,8 @@ angular.module('ng3charts.utils', [])
 
         var rangeAreaSeries, prevArea = 0;
 
-        var data = dataPerRange;
+        var data = dataPerRange
+            , prevRange;
 
         rangeAreaSeries = data.filter(function (series) {
           return series.type === 'rangearea';
@@ -157,15 +158,21 @@ angular.module('ng3charts.utils', [])
 
         rangeAreaSeries.forEach(function(range, index){
 
+
           console.log('Range: ', range)
 
           range.values.forEach(function(value, index){
 
-            value.y0 = prevArea;
+
+            if(prevRange){
+              value.y0 = prevRange[index].y;
+            }else{
+              value.y0 = 0;
+            }
 
           });
 
-          prevArea = range.values[index].y;
+          prevRange = range.values;
 
         });
 
@@ -343,7 +350,7 @@ angular.module('ng3charts.utils', [])
           return s.color;
         }).style('fill', function (s) {
           return s.color;
-        }).style('fill-opacity', 0.8).attr('transform', function (s) {
+        }).style('fill-opacity', 1).attr('transform', function (s) {
           return "translate(" + x1(s) + ",0)";
         }).on('mouseover', function (series) {
           var target;
@@ -608,7 +615,6 @@ angular.module('ng3charts.utils', [])
       },
       drawLines: function (svg, scales, data, options, handlers) {
 
-        console.log('Data in Draw Lines: \n')
         var drawers, interpolateData, lineGroup;
         drawers = {
           y: this.createLeftLineDrawer(scales, options.lineMode, options.tension),
@@ -710,9 +716,6 @@ angular.module('ng3charts.utils', [])
         return d3.svg.line().x(function (d) {
           return scales.xScale(d.x);
         }).y(function (d) {
-
-          console.log('DTYPE: ', d.type);
-
           return scales.yScale(d.y + d.y0);
         }).interpolate(mode).tension(tension);
       },
@@ -1482,8 +1485,6 @@ angular.module('ng3charts.utils', [])
           }
           item.attr('opacity', 1);
           v = that.getClosestPoint(series.values, axes.xScale.invert(x));
-
-          console.log('V: ', v);
 
           text = v.x + ' : ' + v.y;
           if (options.tooltip.formatter) {
