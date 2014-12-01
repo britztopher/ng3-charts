@@ -60,7 +60,7 @@ angular.module('ng3-charts', ['ng3charts.utils'])
         isThumbnail = attrs.mode === 'thumbnail';
         _u.clean(element[0]);
         svg = _u.bootstrap(element[0], dimensions);
-        axes = _u.createAxes(svg, dimensions, options.axes).andAddThemIf(isThumbnail);
+        axes = _u.createAxes(svg, dimensions, options.axes, options.fonts).andAddThemIf(isThumbnail);
         if (dataPerSeries.length) {
           _u.setScalesDomain(axes, scope.data, options.series, svg, options);
         }
@@ -83,12 +83,12 @@ angular.module('ng3-charts', ['ng3charts.utils'])
           }
         }
         if (options.drawLegend) {
-          _u.drawLegend(svg, options.series, dimensions, handlers);
+          _u.drawLegend(svg, options.series, dimensions, handlers, options.fonts);
         }
         if (options.tooltip.mode === 'scrubber') {
-          return _u.createGlass(svg, dimensions, handlers, axes, dataPerSeries, options, columnWidth);
+          return _u.createGlass(svg, dimensions, handlers, axes, dataPerSeries, options, columnWidth, options.fonts);
         } else if (options.tooltip.mode !== 'none') {
-          return _u.addTooltips(svg, dimensions, options.axes);
+          return _u.addTooltips(svg, dimensions, options.axes, options.fonts);
         }
       };
       promise = void 0;
@@ -494,7 +494,7 @@ angular.module('ng3charts.utils', [])
         }
         return widths;
       },
-      drawLegend: function (svg, series, dimensions, handlers) {
+      drawLegend: function (svg, series, dimensions, handlers, fontsOptions) {
         var d, item, items, left, legend, right, that, _ref;
         that = this;
         legend = svg.append('g').attr('class', 'legend');
@@ -559,8 +559,8 @@ angular.module('ng3charts.utils', [])
           'class': function (d, i) {
             return "legendText series_" + i;
           },
-          'font-family': 'Courier',
-          'font-size': 10,
+          'font-family': fontsOptions.family,
+          'font-size': fontsOptions.size,
           'transform': 'translate(13, 4)',
           'text-rendering': 'geometric-precision'
         }).text(function (s) {
@@ -754,7 +754,7 @@ angular.module('ng3charts.utils', [])
       createContent: function (svg) {
         return svg.append('g').attr('class', 'content');
       },
-      createGlass: function (svg, dimensions, handlers, axes, data, options, columnWidth) {
+      createGlass: function (svg, dimensions, handlers, axes, data, options, columnWidth, fontsOptions) {
         var g, g2, glass, items;
         glass = svg.append('g').attr({
           'class': 'glass-container',
@@ -777,7 +777,7 @@ angular.module('ng3charts.utils', [])
             return s.color;
           }
         });
-        this.styleTooltip(g.append('text').style('text-anchor', 'start').attr({
+        this.styleTooltip(fontsOptions, g.append('text').style('text-anchor', 'start').attr({
           'class': function (d, i) {
             return "scrubberText series_" + i;
           },
@@ -801,7 +801,7 @@ angular.module('ng3charts.utils', [])
             return s.color;
           }
         });
-        this.styleTooltip(g2.append('text').style('text-anchor', 'end').attr({
+        this.styleTooltip(fontsOptions, g2.append('text').style('text-anchor', 'end').attr({
           'class': function (d, i) {
             return "scrubberText series_" + i;
           },
@@ -935,7 +935,7 @@ angular.module('ng3charts.utils', [])
           return s.axis !== 'y2';
         });
         leftWidest = this.getWidestOrdinate(data, leftSeries, options);
-        dimensions.left = this.estimateSideTooltipWidth(svg, leftWidest).width + 20;
+        dimensions.left = this.estimateSideTooltipWidth(options.fonts, svg, leftWidest).width + 20;
         rightSeries = series.filter(function (s) {
           return s.axis === 'y2';
         });
@@ -943,7 +943,7 @@ angular.module('ng3charts.utils', [])
           return;
         }
         rightWidest = this.getWidestOrdinate(data, rightSeries, options);
-        return dimensions.right = this.estimateSideTooltipWidth(svg, rightWidest).width + 20;
+        return dimensions.right = this.estimateSideTooltipWidth(options.fonts, svg, rightWidest).width + 20;
       },
       adjustMarginsForThumbnail: function (dimensions, axes) {
         dimensions.top = 1;
@@ -951,11 +951,11 @@ angular.module('ng3charts.utils', [])
         dimensions.left = 0;
         return dimensions.right = 1;
       },
-      estimateSideTooltipWidth: function (svg, text) {
+      estimateSideTooltipWidth: function (fontsOptions, svg, text) {
         var bbox, t;
         t = svg.append('text');
         t.text('' + text);
-        this.styleTooltip(t);
+        this.styleTooltip(fontsOptions, t);
         bbox = this.getTextBBox(t[0][0]);
         t.remove();
         return bbox;
@@ -1002,6 +1002,10 @@ angular.module('ng3charts.utils', [])
           },
           lineMode: 'linear',
           tension: 0.7,
+          fonts: {
+            family: 'Monospace', 
+            size: '14px'
+          },
           axes: {
             x: {
               type: 'linear',
@@ -1033,6 +1037,7 @@ angular.module('ng3charts.utils', [])
         options.series = this.sanitizeSeriesOptions(options.series);
         options.stacks = this.sanitizeSeriesStacks(options.stacks, options.series);
         options.axes = this.sanitizeAxes(options.axes, this.haveSecondYAxis(options.series));
+        options.fonts || (options.fonts = {family: 'Monospace', size: '14px'});
         options.lineMode || (options.lineMode = 'linear');
         options.tension = /^\d+(\.\d+)?$/.test(options.tension) ? options.tension : 0.7;
         this.sanitizeTooltip(options);
@@ -1189,7 +1194,7 @@ angular.module('ng3charts.utils', [])
         this.sanitizeExtrema(options);
         return options;
       },
-      createAxes: function (svg, dimensions, axesOptions) {
+      createAxes: function (svg, dimensions, axesOptions, fontsOptions) {
         var drawY2Axis, height, style, that, width, x, xAxis, y, y2, y2Axis, yAxis;
         drawY2Axis = axesOptions.y2 != null;
         width = dimensions.width;
@@ -1221,7 +1226,8 @@ angular.module('ng3charts.utils', [])
         y2Axis = this.createAxis(y2, 'y2', axesOptions);
         style = function (group) {
           group.style({
-            'font': '10px Courier',
+            'font-family': fontsOptions.family,
+            'font-size': fontsOptions.size,
             'shape-rendering': 'crispEdges'
           });
           return group.selectAll('path').style({
@@ -1637,15 +1643,15 @@ angular.module('ng3charts.utils', [])
           };
         }
       },
-      styleTooltip: function (d3TextElement) {
+      styleTooltip: function (fontsOptions, d3TextElement) {
         return d3TextElement.attr({
-          'font-family': 'monospace',
-          'font-size': 10,
+          'font-family': fontsOptions.family,
+          'font-size': fontsOptions.size,
           'fill': 'white',
           'text-rendering': 'geometric-precision'
         });
       },
-      addTooltips: function (svg, dimensions, axesOptions) {
+      addTooltips: function (svg, dimensions, axesOptions, fontsOptions) {
         var h, height, p, w, width, xTooltip, y2Tooltip, yTooltip;
         width = dimensions.width;
         height = dimensions.height;
@@ -1660,7 +1666,7 @@ angular.module('ng3charts.utils', [])
           'opacity': 0
         });
         xTooltip.append('path').attr('transform', "translate(0," + (height + 1) + ")");
-        this.styleTooltip(xTooltip.append('text').style('text-anchor', 'middle').attr({
+        this.styleTooltip(fontsOptions, xTooltip.append('text').style('text-anchor', 'middle').attr({
           'width': w,
           'height': h,
           'transform': 'translate(0,' + (height + 19) + ')'
@@ -1671,7 +1677,7 @@ angular.module('ng3charts.utils', [])
           opacity: 0
         });
         yTooltip.append('path');
-        this.styleTooltip(yTooltip.append('text').attr({
+        this.styleTooltip(fontsOptions, yTooltip.append('text').attr({
           'width': h,
           'height': w
         }));
@@ -1683,7 +1689,7 @@ angular.module('ng3charts.utils', [])
             'transform': 'translate(' + width + ',0)'
           });
           y2Tooltip.append('path');
-          return this.styleTooltip(y2Tooltip.append('text').attr({
+          return this.styleTooltip(fontsOptions, y2Tooltip.append('text').attr({
             'width': h,
             'height': w
           }));
