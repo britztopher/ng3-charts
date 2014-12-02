@@ -1,20 +1,18 @@
-# n3-line-chart [![Build Status](https://travis-ci.org/n3-charts/line-chart.svg?branch=master)](https://travis-ci.org/n3-charts/line-chart)
+# ng3-charts
 
 ![](https://raw.githubusercontent.com/n3-charts/line-chart/gh-pages/assets/images/n3-charts.png)
 
-n3-line-chart makes creating beautiful charts for [AngularJS](http://angularjs.org/) applications easy and semantic. It is built on top of [D3.js](http://d3js.org/).
+ng3-charts is a fork from 'n3-charts.linechart' with a couple additions.  It gives you the ability to create beautiful charts for [AngularJS](http://angularjs.org/) applications in an easy and semantic way. It is built on top of [D3.js](http://d3js.org/).
 
 You can find examples on the [demo page](http://n3-charts.github.io/line-chart/).
 
 ### How to install
- + Install using bower : `bower install n3-line-chart` (or copy `line-chart.min.js` wherever you want)
- + Reference `line-chart.min.js` in your index.html file
+ + Install using bower : `bower install ng3-charts` (or copy `ng3-charts.js` wherever you want)
+ + Reference `ng3-charts.js` in your index.html file
  + Reference the module in your app file :
     ```
-    angular.module('myApp', ['n3-line-chart'])
+    angular.module('myApp', ['ng3-charts'])
     ```
-
-> The module was originally named `n3-charts.linechart`. This is still valid but will probably be removed in the future.
 
 ### How to use
 A line chart is called using this syntax :
@@ -82,10 +80,11 @@ It can also contain, according to your series configuration, a `y` and a `y2` ke
 The `series` key must be an array which contains objects with the following properties :
 
 + `y` : mandatory, defines which property on each data row will be used as ordinate value.
++ `stacks`: an array that allows you to specify which datum you would like to stack on top of eachother.  More info with example below.
 + `color` : optional, any valid HTML color (if none given, the chart will set it for you).
 + `label` : optional, will be used in the legend (if undefined, the `y` value will be used).
 + `axis` : optional, can be either 'y' (default, for left) or 'y2' (for right). Defines which vertical axis should be used for this series. If no right axis is needed, none will be displayed.
-+ `type` : optional, can be one value between 'line', 'area', 'column'. Default is 'line'.
++ `type` : optional, can be one of the following values 'line', 'area', 'column', and 'rangearea'. Default is 'line'.  Further information on types can be found below.
 + `striped` : optional, can be either `true` or `false`. Default is `false`. Will be ignored if the series type is not 'area'.
 + `thickness` : optional, can be `{n}px`. Default is `1px`. Will be ignored if the series type is not 'area' or 'line'.
 + `lineMode` : optional, can be `dashed`. Default is undefined. Defines whether the series is rendered as a dashed line. Removed if the series type is not `line` or `area`.
@@ -93,6 +92,29 @@ The `series` key must be an array which contains objects with the following prop
 + `visible` : optional, can be either `true` or `false`. Default is true. Defines whether the series is initially visible. Will be updated if the series gets hidden or shown through a click on the legend.
 + `dotSize` : optional, must be an numerical value. Default is `2`. Will be ignored if the series type is not `area` or `line`, or if `drawDots` is set to `false`.
 
+#####Chart Types
+Within the series section for the chart you can specify 4 different chart types ('line', 'area', 'column', and 'rangearea').  The default is a line chart type.  
+######Line
+The line chart is just that.  A line that maps to your data.
+
+######Area
+An area chart is just like a line chart, however, the area below the line is filled in given a specific color.
+
+######Column
+Column charts are just as the name describes a way to draw a column or bar chart.
+
+######RangeArea
+Range area is just like the area chart, however, in an area chart the colors will overlap each other causing the colors to lose their initial value.  With a rangearea chart the colors are persistent and will not overlap.  Sort of like a stream graph.  One thing about rangearea charts is that you cannot use the datum in a stacked option.
+
+
+#####Stacks
+Stacks allow you to stack your data in a chart. For example, say I would like to stack a column chart with a couple of `series` that I listed in my `series` section like so:
+
+ ```javascript 
+ series: [
+    {id: 'ssIncome', y: 'ssIncome', axis: 'y', color: getColors().ssIncome, thickness: '2px', type: 'column', label: 'Social Security'},
+                  {id: 'ptIncome', y: 'ptIncome', axis: 'y', color: getColors().ptIncome, type: 'column', drawDots: true, dotSize: 4, label: 'Part Time'},
+                  {id: 'invIncome', y: 'invIncome', axis: 'y', color: getColors().invIncome, type: 'column', dotSize: 2, label: 'Investments'},```
 ##### Tooltip
 The `tooltip` must be an object which contains the following properties :
  + `mode` : can be set to `none`, `axes`, or `scrubber`. It can also be set to `scrubber`, which displays tooltips for all series. Default is `scrubber`.
@@ -148,25 +170,12 @@ Install components :
 $ bower install
 ```
 
-Watch :
-```sh
-$ grunt watch
-```
-
-Or just build :
-```sh
-$ grunt
-```
-
-Or run the visual tests, too :
-```sh
-$ grunt travis
-```
+###Grunt
+I am currently working on getting a test suite as well as other grunt tasks to build a minified version and watch files.
 
 
 ### Testing
-AngularJS is designed to build testable apps, so is this project.
-It has a good coverage rate (above 95%), let's keep it this way.
+Currently there are no tests for this project.  I am currently working to get the pre existing tests from line-chart.js to work in this project
 
   [1]: https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-line_interpolate
   [2]: https://github.com/n3-charts/line-chart/issues/44
