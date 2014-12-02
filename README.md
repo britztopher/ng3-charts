@@ -104,17 +104,29 @@ An area chart is just like a line chart, however, the area below the line is fil
 Column charts are just as the name describes a way to draw a column or bar chart.
 
 ######RangeArea
-Range area is just like the area chart, however, in an area chart the colors will overlap each other causing the colors to lose their initial value.  With a rangearea chart the colors are persistent and will not overlap.  Sort of like a stream graph.  One thing about rangearea charts is that you cannot use the datum in a stacked option.
+Range area is just like the area chart, however, in an area chart the colors will overlap each other causing the colors to lose their initial value.  With a rangearea chart the colors are persistent and will not overlap.  Sort of like a stream graph.  One thing about rangearea charts is that you cannot use the datum in a stacked option. 
+
+![](http://res.cloudinary.com/buddahbelly/image/upload/v1417529675/rangearea.png)
 
 
-#####Stacks
+####Stacks
 Stacks allow you to stack your data in a chart. For example, say I would like to stack a column chart with a couple of `series` that I listed in my `series` section like so:
 
- ```javascript 
+```javascript 
  series: [
-    {id: 'ssIncome', y: 'ssIncome', axis: 'y', color: getColors().ssIncome, thickness: '2px', type: 'column', label: 'Social Security'},
-                  {id: 'ptIncome', y: 'ptIncome', axis: 'y', color: getColors().ptIncome, type: 'column', drawDots: true, dotSize: 4, label: 'Part Time'},
-                  {id: 'invIncome', y: 'invIncome', axis: 'y', color: getColors().invIncome, type: 'column', dotSize: 2, label: 'Investments'},```
+	{id: 'data1', y: 'dataOne', axis: 'y', color: 'blue', thickness: '2px', type: 'column', label: 'Series One'},
+	{id: 'data2', y: 'dataTwo', axis: 'y', color: 'purple', type: 'column', label: 'Series Two'},
+    {id: 'data3', y: 'dataThree', axis: 'y', color: 'green', type: 'column', label: 'Series Three'}]
+```
+With my series defined I can now add them to a stack using their id defined in the series:
+```javascript
+     stacks: [{axis: "y", series: ['data1', 'data2', 'data3']}]
+```
+This will stack the data one on top of each other depending on their order, so for this example data1 will go from 0 to its upper limit, data2 will go from data1's upper limit to it's own upper limit, and data3 will go from data2's upper limit to it's own upper limit. 
+
+There is something that is noteworthy about stacked graphs and that is that they add their numbers together, so you will get the sum of the data when stacked like the image below:
+
+![](http://res.cloudinary.com/buddahbelly/image/upload/v1417529580/ng3-charts/Screen_Shot_2014-12-02_at_9_12_38_AM.png)
 ##### Tooltip
 The `tooltip` must be an object which contains the following properties :
  + `mode` : can be set to `none`, `axes`, or `scrubber`. It can also be set to `scrubber`, which displays tooltips for all series. Default is `scrubber`.
@@ -180,3 +192,7 @@ Currently there are no tests for this project.  I am currently working to get th
   [1]: https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-line_interpolate
   [2]: https://github.com/n3-charts/line-chart/issues/44
   [3]: http://stackoverflow.com/a/11661725
+
+
+
+> Written with [StackEdit](https://stackedit.io/).
