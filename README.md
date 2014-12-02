@@ -110,11 +110,12 @@ Range area is just like the area chart, however, in an area chart the colors wil
 #####Stacks
 Stacks allow you to stack your data in a chart. For example, say I would like to stack a column chart with a couple of `series` that I listed in my `series` section like so:
 
- ```javascript 
+ ```js
  series: [
-    {id: 'ssIncome', y: 'ssIncome', axis: 'y', color: getColors().ssIncome, thickness: '2px', type: 'column', label: 'Social Security'},
-                  {id: 'ptIncome', y: 'ptIncome', axis: 'y', color: getColors().ptIncome, type: 'column', drawDots: true, dotSize: 4, label: 'Part Time'},
-                  {id: 'invIncome', y: 'invIncome', axis: 'y', color: getColors().invIncome, type: 'column', dotSize: 2, label: 'Investments'},```
+{id: 'ssIncome', y: 'ssIncome', axis: 'y', color: getColors().ssIncome, thickness: '2px', type: 'column', label: 'Social Security'},
+{id: 'ptIncome', y: 'ptIncome', axis: 'y', color: getColors().ptIncome, type: 'column', drawDots: true, dotSize: 4, label: 'Part Time'},
+{id: 'invIncome', y: 'invIncome', axis: 'y', color: getColors().invIncome, type: 'column', dotSize: 2, label: 'Investments'}]
+```
 ##### Tooltip
 The `tooltip` must be an object which contains the following properties :
  + `mode` : can be set to `none`, `axes`, or `scrubber`. It can also be set to `scrubber`, which displays tooltips for all series. Default is `scrubber`.
