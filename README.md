@@ -112,11 +112,11 @@ Range area is just like the area chart, however, in an area chart the colors wil
 ####Stacks
 Stacks allow you to stack your data in a chart. For example, say I would like to stack a column chart with a couple of `series` that I listed in my `series` section like so:
 
-```javascript 
+ ```js
  series: [
-	{id: 'data1', y: 'dataOne', axis: 'y', color: 'blue', thickness: '2px', type: 'column', label: 'Series One'},
-	{id: 'data2', y: 'dataTwo', axis: 'y', color: 'purple', type: 'column', label: 'Series Two'},
-    {id: 'data3', y: 'dataThree', axis: 'y', color: 'green', type: 'column', label: 'Series Three'}]
+{id: 'ssIncome', y: 'ssIncome', axis: 'y', color: getColors().ssIncome, thickness: '2px', type: 'column', label: 'Social Security'},
+{id: 'ptIncome', y: 'ptIncome', axis: 'y', color: getColors().ptIncome, type: 'column', drawDots: true, dotSize: 4, label: 'Part Time'},
+{id: 'invIncome', y: 'invIncome', axis: 'y', color: getColors().invIncome, type: 'column', dotSize: 2, label: 'Investments'}]
 ```
 With my series defined I can now add them to a stack using their id defined in the series:
 ```javascript
