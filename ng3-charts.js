@@ -52,7 +52,6 @@ angular.module('ng3-charts', ['ng3charts.utils'])
         handlers = angular.extend(initialHandlers, _u.getTooltipHandlers(options));
 
         dataPerSeries = _u.getDataPerSeries(scope.data, options);
-        $log.debug('DataPerSeries: \n' , dataPerSeries);
 
         rangeData = angular.copy(dataPerSeries);
 
@@ -74,8 +73,6 @@ angular.module('ng3-charts', ['ng3charts.utils'])
 
           columnWidth = _u.getBestColumnWidth(dimensions, dataPerSeries, options);
          var  newData = _u.getRangeData(svg, rangeData);
-
-          $log.debug('NewData: \n' , newData);
 
           _u.drawRange(svg, axes, newData, options, handlers).drawArea(svg, axes, dataPerSeries, options, handlers).drawColumns(svg, axes, dataPerSeries, columnWidth, options, handlers).drawLines(svg, axes, dataPerSeries, options, handlers);
           if (options.drawDots) {
@@ -159,8 +156,6 @@ angular.module('ng3charts.utils', [])
 
         //for each range in series
         rangeAreaSeries.forEach(function(range, index){
-
-          $log.debug('Range: ', range)
 
           //for each data value within a range
           range.values.forEach(function(value, index){
@@ -342,6 +337,8 @@ angular.module('ng3charts.utils', [])
         data.forEach(function (s) {
           return s.xOffset = x1(s) + columnWidth * .5;
         });
+
+        console.log(data);
         colGroup = svg.select('.content').selectAll('.columnGroup').data(data).enter().append("g").attr('class', function (s) {
           return 'columnGroup series_' + s.index;
         }).style('stroke', function (s) {
@@ -365,42 +362,85 @@ angular.module('ng3charts.utils', [])
         });
         colGroup.selectAll("rect").data(function (d) {
           return d.values;
-        }).enter().append("rect").style({
-          'stroke-opacity': function (d) {
-            if (d.y === 0) {
-              return '0';
-            } else {
-              return '1';
+        }).enter().append("rect")
+            .style({
+              'stroke-opacity': function (d) {
+                if (d.y === 0) {
+                  return '0';
+                } else {
+                  return '1';
+                }
+              },
+              'stroke-width': '1px',
+              'fill-opacity': function (d) {
+                if (d.y === 0) {
+                  return 0;
+                } else {
+                  return 0.7;
+                }
+              }
+            })
+            .attr({
+              width: columnWidth,
+              x: function (d) {
+                return axes.xScale(d.x);
+              },
+              height: function(d){
+                if(options.transition){
+                  return 0;
+                }else {
+                  if (d.y === 0) {
+                    console.log('Axes: ',  axes[d.axis + 'Scale'].range()[0]);
+                    return axes[d.axis + 'Scale'].range()[0];
+                  }
+                  return Math.abs(axes[d.axis + 'Scale'](d.y0 + d.y) - axes[d.axis + 'Scale'](d.y0));
+                }
+              },
+              y: function (d) {
+                  if(options.transition){
+                    return axes[d.axis + 'Scale'].range()[0];
+                  }else{
+                    if (d.y === 0) {
+                      return 0;
+                    } else {
+                      return axes[d.axis + 'Scale'](Math.max(0, d.y0 + d.y));
+                    }
+                  }
+              }
+            })
+
+            if(options.transition){
+              this.addTransition(colGroup, 'rect', axes, options.transition);
             }
-          },
-          'stroke-width': '1px',
-          'fill-opacity': function (d) {
-            if (d.y === 0) {
-              return 0;
-            } else {
-              return 0.7;
-            }
-          }
-        }).attr({
-          width: columnWidth,
-          x: function (d) {
-            return axes.xScale(d.x);
-          },
-          height: function (d) {
-            if (d.y === 0) {
-              return axes[d.axis + 'Scale'].range()[0];
-            }
-            return Math.abs(axes[d.axis + 'Scale'](d.y0 + d.y) - axes[d.axis + 'Scale'](d.y0));
-          },
-          y: function (d) {
-            if (d.y === 0) {
-              return 0;
-            } else {
-              return axes[d.axis + 'Scale'](Math.max(0, d.y0 + d.y));
-            }
-          }
-        });
+
         return this;
+      },
+
+      addTransition: function(svg, type, axes, transition){
+
+
+          svg.selectAll(type)
+            .transition()
+            .duration(transition.duration)
+            .delay(function(d, i) { return i * transition.delay; })
+            .attr("y", function(d) {
+              if (d.y === 0) {
+                return 0;
+              } else {
+                return axes[d.axis + 'Scale'](Math.max(0, d.y0 + d.y));
+              }
+            })
+            .attr("height", function(d) {
+              if (d.y === 0) {
+                console.log('Axes: ',  axes[d.axis + 'Scale'].range()[0]);
+                return axes[d.axis + 'Scale'].range()[0];
+              }
+              return Math.abs(axes[d.axis + 'Scale'](d.y0 + d.y) - axes[d.axis + 'Scale'](d.y0));
+            })
+            .ease(transition.ease);
+
+        return;
+
       },
       drawDots: function (svg, axes, data, options, handlers) {
         var dotGroup;
@@ -902,7 +942,7 @@ angular.module('ng3charts.utils', [])
           return layout(layers);
         });
 
-        $log.debug('Straightened: ', straightened);
+
 
         return straightened;
       },
