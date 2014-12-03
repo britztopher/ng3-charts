@@ -52,6 +52,7 @@ $scope.options = {
     {y: 'otherValue', axis: 'y2', color: 'lightsteelblue', visible: false, drawDots: true, dotSize: 2}
   ],
   lineMode: 'linear',
+  transition: {ease: 'elastic', duration: 1000, delay: 50},
   tension: 0.7,
   tooltip: {mode: 'scrubber', formatter: function(x, y, series) {return 'pouet';}},
   drawLegend: true,
@@ -127,6 +128,23 @@ This will stack the data one on top of each other depending on their order, so f
 There is something that is noteworthy about stacked graphs and that is that they add their numbers together, so you will get the sum of the data when stacked like the image below:
 
 ![](http://res.cloudinary.com/buddahbelly/image/upload/v1417529580/ng3-charts/Screen_Shot_2014-12-02_at_9_12_38_AM.png)
+
+#####Transition
+The `transition` option must be an object which contains the following properties:
+
+ - ease : this allows you to specify which type of easing you want to use (ie - linear, elastic)
+ - duration : allows you to control how long you want the transition to last for  in milliseconds
+ - delay : amount of delay before starting transition.  This defaults to zero
+
+As for right now this transitions only works for drawing column/bar charts.  There will be support for other types in the near future.
+
+Usage:
+
+```js
+         transition: {ease: 'elastic', duration: 1000, delay: 50},
+```
+NOTE: These options correspond to the d3 docs on transitions found [d3 transitions](https://github.com/mbostock/d3/wiki/Transitions)
+
 ##### Tooltip
 The `tooltip` must be an object which contains the following properties :
  + `mode` : can be set to `none`, `axes`, or `scrubber`. It can also be set to `scrubber`, which displays tooltips for all series. Default is `scrubber`.
