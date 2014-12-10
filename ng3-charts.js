@@ -84,9 +84,16 @@ angular.module('ng3-charts', ['ng3charts.utils'])
         }
         if (options.tooltip.mode === 'scrubber') {
           return _u.createGlass(svg, dimensions, handlers, axes, dataPerSeries, options, columnWidth, options.fonts);
-        } else if (options.tooltip.mode !== 'none') {
+        } 
+        else if (options.tooltip.mode !== 'none') {
           return _u.addTooltips(svg, dimensions, options.axes, options.fonts);
         }
+        else{
+          console.log("tooltip mode is 'none'");
+          return _u.setupExternalLegendGlass(svg, dimensions, handlers, axes, dataPerSeries, options, columnWidth, options.fonts);
+        }
+        
+        
       };
       promise = void 0;
       window_resize = function () {
@@ -795,6 +802,32 @@ angular.module('ng3charts.utils', [])
       createContent: function (svg) {
         return svg.append('g').attr('class', 'content');
       },
+      setupExternalLegendGlass:function (svg, dimensions, handlers, axes, data, options, columnWidth, fontsOptions) {
+
+        //console.log("Inside setupExternalLegendGlass");
+
+        var glass = svg.append('g').attr({
+          'class': 'glass-container',
+          'opacity': 0
+        });
+
+        return glass.append('rect').attr({
+          "class": 'glass',
+          width: dimensions.width - dimensions.left - dimensions.right,
+          height: dimensions.height - dimensions.top - dimensions.bottom
+        })
+        .style('fill', 'white')
+        .style('fill-opacity', 0.000001)
+        .on('mouseover', function () {
+          
+          console.log("Inside setupExternalLegendGlass:onChartHover");
+              
+          // calling callExternalLegendHandler
+          return handlers.onChartHover(svg, d3.select(d3.event.target), axes, data, options, columnWidth);
+        });
+
+
+      },
       createGlass: function (svg, dimensions, handlers, axes, data, options, columnWidth, fontsOptions) {
         var g, g2, glass, items;
         glass = svg.append('g').attr({
@@ -1468,6 +1501,47 @@ angular.module('ng3charts.utils', [])
           return s.axis !== 'y2';
         });
       },
+      callExternalLegendHandler:function (svg, glass, axes, data, options, columnWidth) {
+
+        console.log("Inside callExternalLegendHandler");
+
+        var that = this;
+
+        glass.on('mousemove', function () {
+
+          //console.log("callExternalLegendHandler:mousemove");
+
+          var mousePos = d3.mouse(this);
+          var x = mousePos[0];  //, y = mousePos[1]; // mouse position relative to the svg
+          var value = axes.xScale.invert(x);
+
+          // since we have disabled the tooltips we need to get the datapoints here
+          if (options.tooltip && options.tooltip.mode === 'none'){
+
+            //console.log("options tooltip mode is none", data);
+
+            data.forEach(function (series, index) {
+
+              var v = that.getClosestPoint(series.values, value);
+
+              if (options.legendHandler) {
+                options.legendHandler(v.x, v.y, series, index, options);
+              }
+            });
+
+          }
+
+        });
+
+        return glass.on('mouseout', function () {
+
+          console.log("callExternalLegendHandler:mouseout");
+
+          glass.on('mousemove', null);
+
+        });
+
+      },
       showScrubber: function (svg, glass, axes, data, options, columnWidth) {
         var that;
         that = this;
@@ -1676,7 +1750,13 @@ angular.module('ng3charts.utils', [])
           return {
             onChartHover: angular.bind(this, this.showScrubber)
           };
-        } else {
+        } 
+        else if (options.tooltip.mode === 'none') {
+          return {
+            onChartHover: angular.bind(this, this.callExternalLegendHandler)
+          };
+        }
+        else {
           return {
             onMouseOver: angular.bind(this, this.onMouseOver),
             onMouseOut: angular.bind(this, this.onMouseOut)
@@ -1750,6 +1830,12 @@ angular.module('ng3charts.utils', [])
         var datum, label, series, textX, x, xTooltip;
         x = _arg.x, datum = _arg.datum, series = _arg.series;
         xTooltip = svg.select("#xTooltip");
+        
+        if (xTooltip.empty()){
+          console.log("xTooltip is empty");
+          return null;
+        }
+        
         xTooltip.transition().attr({
           'opacity': 1.0,
           'transform': "translate(" + x + ",0)"
