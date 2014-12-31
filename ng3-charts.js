@@ -324,7 +324,11 @@ angular.module('ng3charts.utils', [])
       },
       getColumnAxis: function (data, columnWidth, options) {
         var keys, pseudoColumns, x1, _ref;
-        _ref = this.getPseudoColumns(data, options), pseudoColumns = _ref.pseudoColumns, keys = _ref.keys;
+        
+        _ref = this.getPseudoColumns(data, options);
+        pseudoColumns = _ref.pseudoColumns;
+        keys = _ref.keys;
+        
         x1 = d3.scale.ordinal().domain(keys).rangeBands([0, keys.length * columnWidth], 0);
         return function (s) {
           var index;
@@ -345,7 +349,7 @@ angular.module('ng3charts.utils', [])
           return s.xOffset = x1(s) + columnWidth * .5;
         });
 
-        console.log(data);
+        //console.log(data);
         colGroup = svg.select('.content').selectAll('.columnGroup').data(data).enter().append("g").attr('class', function (s) {
           return 'columnGroup series_' + s.index;
         }).style('stroke', function (s) {
@@ -1514,6 +1518,9 @@ angular.module('ng3charts.utils', [])
           var mousePos = d3.mouse(this);
           var x = mousePos[0];  //, y = mousePos[1]; // mouse position relative to the svg
           var value = axes.xScale.invert(x);
+          
+          // if the option was enabled to highlight column graphs when you mouse over them
+          that.highlightBar(svg, options, x, columnWidth);
 
           // since we have disabled the tooltips we need to get the datapoints here
           if (options.tooltip && options.tooltip.mode === 'none'){
@@ -1535,13 +1542,106 @@ angular.module('ng3charts.utils', [])
 
         return glass.on('mouseout', function () {
 
-          console.log("callExternalLegendHandler:mouseout");
+          	console.log("callExternalLegendHandler:mouseout");
 
-          glass.on('mousemove', null);
+          	glass.on('mousemove', null);
+          
+           	// if the option was selected to highlight column graphs when moving the mouse over them then we need
+            // to remove the highlight when moving the mouse out of the graph area
+            that.clearHighlightBar(svg, options);
 
         });
 
       },
+      highlightBar: function (svg, options, mouseXPos, columnWidth) {
+
+            //console.log("Inside highlightBar");
+
+            // if we need to highlight column/bar graphs
+            if (options.highlightGraphs && options.highlightGraphs.length > 0){
+
+                //console.log("options.highlightGraphs: ", options.highlightGraphs);
+
+                options.highlightGraphs.forEach(function (highlight) {
+
+                    // console.log("highlight: ", highlight);
+
+                    var colGroupBars = svg.select('.content').selectAll(".columnGroup.series_" + highlight.seriesIndex + " rect");
+
+                    colGroupBars.each(function(s, i){   // s is the data for the given series or graph
+
+                        var box = this.getBBox();
+                        var rect = d3.select(this);
+
+                        //console.log("mouseXPos["+mouseXPos+"], box.x: " + box.x + ", box.width: " + box.width + ", s: ", s);
+
+                        var xMax = mouseXPos + columnWidth; //box.width;
+                        var xMin = mouseXPos - columnWidth; //box.width;
+
+                        // if the column is within the mouse pointer area
+                        if (box.x <= xMax && box.x >= xMin){
+                            console.log("found match on " + s.x);
+
+                            if (options.formatHighlight){
+                                options.formatHighlight(rect, columnWidth);
+                            }
+                            else{   // default highlight if no formatter was given
+
+                                rect.style({'fill': '#6bff84',
+                                    'fill-opacity': 1,  // make brighter
+                                    'stroke-width': '0px'   // remove border
+                                    // 'cursor': 'pointer'
+                                });
+
+                                rect.attr({'width': columnWidth + 3});  // zoom into bar and make it look bigger
+                            }
+
+                        }
+                        else{
+                            // restore previous style
+                            rect.style({'fill': s.color,
+                                        'fill-opacity': 0.7,
+                                        'stroke-width': '1px'
+                                       // 'cursor': 'auto'
+                            });
+
+                            rect.attr({'width': columnWidth});
+
+                        }
+
+                    });
+
+                });
+
+
+            }   // end if highlightGraphs
+
+        },
+        clearHighlightBar: function (svg, options) {
+
+            //console.log("Inside clearHighlightBar");
+
+            // if we are NOT using the external legend then reset the highlight on the column bars when mousing outof the graph area
+            if (options.legendHandler == undefined){
+
+                // remove highlight from the selected column graphs
+                if (options.highlightGraphs && options.highlightGraphs.length > 0){
+
+                    options.highlightGraphs.forEach(function (highlight) {
+
+                        var colGroupBars = svg.select('.content').selectAll(".columnGroup.series_" + highlight.seriesIndex + " rect");
+
+                        colGroupBars.style('fill', function (s) {  // s is the data for the given series or graph
+
+                            return s.color;
+                        });
+
+                    }); // end foreach
+
+                }
+            }
+
+        },
       showScrubber: function (svg, glass, axes, data, options, columnWidth) {
         var that;
         that = this;
