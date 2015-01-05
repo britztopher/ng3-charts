@@ -155,7 +155,7 @@ The `tooltip` must be an object which contains the following properties :
 If the `tooltip` attribute is not the visual effect you want, for example in the case where you have multiple data series in one graph area,
 and multiple tooltips are displayed; all at once; you can make use of the `legendHandler` which will be called by ng3-charts as the user mouse-over the graph.
 
-![](http://res.cloudinary.com/buddahbelly/image/upload/v1417529580/ng3-charts/graph_with_external_legend.png)
+![](http://res.cloudinary.com/buddahbelly/image/upload/v1420493285/ng3-charts/graph_with_external_legend.png)
 
 This way tootip data can be displayed in one fixed place anywhere on the screen and will be able to get updated data points as the user moves his mouse over the graph area.
 The user basically has full control over how to display the data, by writing his/her own html/css and just plugging in the data values. 
@@ -188,7 +188,8 @@ This visual effect goes well together with the external legend in that is puts t
 and displaying its data value inside the external legend. The `highlightGraphs` attribute however can be used by iitself and does not depend on 
 the `legendHandler` attribute.
 
-![](http://res.cloudinary.com/buddahbelly/image/upload/v1417529580/ng3-charts/graph_highlight.png)
+![](http://res.cloudinary.com/buddahbelly/image/upload/v1420493287/ng3-charts/graph_highlight.png)
+
 
 To use the `highlightGraphs` attribute the user must supply a list of highlight objects. Each object represent an existing graph of type `column` 
 and should have the attributes `seriesIndex` to identify the specific series as well as `color` as the highlighted color. If the user wants to have more flexability
