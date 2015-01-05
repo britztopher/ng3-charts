@@ -1583,11 +1583,13 @@ angular.module('ng3charts.utils', [])
                             console.log("found match on " + s.x);
 
                             if (options.formatHighlight){
-                                options.formatHighlight(rect, columnWidth);
+                                options.formatHighlight(s, rect, columnWidth);
                             }
                             else{   // default highlight if no formatter was given
 
-                                rect.style({'fill': '#6bff84',
+                                var selColor = highlight.color || '#6bff84';    // neon green
+
+                                rect.style({'fill': selColor,
                                     'fill-opacity': 1,  // make brighter
                                     'stroke-width': '0px'   // remove border
                                     // 'cursor': 'pointer'
