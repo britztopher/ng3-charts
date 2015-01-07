@@ -151,6 +151,68 @@ The `tooltip` must be an object which contains the following properties :
  + `interpolate` : can be either `true`or `false`. Default is `false`. Will be ignored if the tooltip's mode is not `axes`.
  + `formatter` : optional, allows to catch the tooltip before it gets rendered. Must be a function that takes `x`, `y` and `series` as arguments and returns a string. Ignored when mode is not `scrubber`.
 
+##### External Legend
+If the `tooltip` attribute is not the visual effect you want, for example in the case where you have multiple data series in one graph area,
+and multiple tooltips are displayed; all at once; you can make use of the `legendHandler` which will be called by ng3-charts as the user mouse-over the graph.
+
+![](http://res.cloudinary.com/buddahbelly/image/upload/v1420493285/ng3-charts/graph_with_external_legend.png)
+
+This way tootip data can be displayed in one fixed place anywhere on the screen and will be able to get updated data points as the user moves his mouse over the graph area.
+The user basically has full control over how to display the data, by writing his/her own html/css and just plugging in the data values. 
+To enable the `legendHandler` the `tooltip` mode must be set to `none` and a method `legendHandler` must be defined in options as follows:
+
+```js
+         legendHandler: function(x, y, series, index, options) {
+
+			// creates the external legend if not already exists
+            var chartLegend = drawExternalLegend(chart, legendBoxClassName, options);
+
+            // will update the existing legend with chart data
+            updateLegendPointData(chartLegend, x,  y, series, index);
+
+        },
+```
+
+The user is passes the x and y values of the given data point the mouse is currently moved over (for every data series if multiple are defined) 
+as well as the complete data series, its index and the options object itself. This gives the user full control and the ability to draw any html/css 
+to create a custom legend. It is recomended to use D3js instead of the traditional jQuery to modify any existing html DOM components.
+
+##### Highlight Graph Column 
+If the `highlightGraphs` attribute (must be an array) is defined inside options e.g.:
+
+```js
+         highlightGraphs: [{seriesIndex: 5, color: "#6bff84"}],
+```
+It will allow the user to highlight a specific column of a column/bar graph as the user is moving his/her mouse over the specific column within the graph. 
+This visual effect goes well together with the external legend in that is puts the focus on a specific column by changing the color of the given bar/column
+and displaying its data value inside the external legend. The `highlightGraphs` attribute however can be used by iitself and does not depend on 
+the `legendHandler` attribute.
+
+![](http://res.cloudinary.com/buddahbelly/image/upload/v1420493287/ng3-charts/graph_highlight.png)
+
+
+To use the `highlightGraphs` attribute the user must supply a list of highlight objects. Each object represent an existing graph of type `column` 
+and should have the attributes `seriesIndex` to identify the specific series as well as `color` as the highlighted color. If the user wants to have more flexability
+in modifying the style or attributes of a graph colomn the user can define an additional options attribute called `formatHighlight` for example:
+
+```js
+         formatHighlight: function(series, rect, columnWidth) {   // this is the svg rect object presenting the vertical bar/column
+
+            
+            rect.style({'fill': '#6bff84',	// fill color
+                'fill-opacity': 1,  
+                'stroke-width': '0px'   // remove border
+               
+            });
+
+            rect.attr({'width': columnWidth + 3});  // zoom into bar and make it look bigger
+        },
+```
+
+This method will be called as the user is moving his/her mouse pointer over the graph. It will pass the given data `series`, the actual SVG bar `rect` object, 
+and the column with for the given bar/column graph. This gives the user full control over the style and any other SVG attributes as can be seen in the above example.
+
+
 ##### Optional stuff
 Additionally, you can set `lineMode` to a value between these :
 
