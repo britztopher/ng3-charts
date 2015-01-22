@@ -401,8 +401,9 @@ angular.module('ng3charts.utils', [])
                   return 0;
                 }else {
                   if (d.y === 0) {
-                    console.log('Axes: ',  axes[d.axis + 'Scale'].range()[0]);
-                    return axes[d.axis + 'Scale'].range()[0];
+                    
+                    console.log('y value = 0, so set height to 0, Axes: ',  axes[d.axis + 'Scale'].range()[0]);
+                    return 0;   //axes[d.axis + 'Scale'].range()[0];    // this is the max height of the graph
                   }
                   return Math.abs(axes[d.axis + 'Scale'](d.y0 + d.y) - axes[d.axis + 'Scale'](d.y0));
                 }
@@ -443,7 +444,7 @@ angular.module('ng3charts.utils', [])
             })
             .attr("height", function(d) {
               if (d.y === 0) {
-                console.log('Axes: ',  axes[d.axis + 'Scale'].range()[0]);
+                //console.log('Axes: ',  axes[d.axis + 'Scale'].range()[0]);
                 return axes[d.axis + 'Scale'].range()[0];
               }
               return Math.abs(axes[d.axis + 'Scale'](d.y0 + d.y) - axes[d.axis + 'Scale'](d.y0));
