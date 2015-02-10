@@ -444,8 +444,7 @@ angular.module('ng3charts.utils', [])
             })
             .attr("height", function(d) {
               if (d.y === 0) {
-                //console.log('Axes: ',  axes[d.axis + 'Scale'].range()[0]);
-                return axes[d.axis + 'Scale'].range()[0];
+                return 0
               }
               return Math.abs(axes[d.axis + 'Scale'](d.y0 + d.y) - axes[d.axis + 'Scale'](d.y0));
             })
